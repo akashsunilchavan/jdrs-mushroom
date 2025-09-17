@@ -59,13 +59,13 @@ class AuthService {
     }
 
     // Try to get from localStorage
-    const stored = localStorage.getItem("jdrs_user")
+    const stored = localStorage.getItem("user")
     if (stored) {
       try {
         this.currentUser = JSON.parse(stored)
         return this.currentUser
       } catch {
-        localStorage.removeItem("jdrs_user")
+        localStorage.removeItem("user")
       }
     }
 

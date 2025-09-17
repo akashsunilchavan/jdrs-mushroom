@@ -6,21 +6,23 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'jdrs App',
-  description: '',
-  generator: '',
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}
+        suppressHydrationWarning
+      >
         {children}
         <Analytics />
       </body>
     </html>
   )
 }
+

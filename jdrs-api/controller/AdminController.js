@@ -66,3 +66,26 @@ exports.loginAdmin = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
+// controllers/adminController.js
+
+// Example: Logout Admin
+exports.logoutAdmin = (req, res) => {
+  try {
+    // For JWT, you typically can't "destroy" the token on server,
+    // but you can tell the client to remove it and optionally blacklist it.
+
+    // Optionally: If you store tokens in DB or blacklist, remove/invalidate token here
+    const token = req.headers.authorization?.split(" ")[1];
+    console.log("Logging out token:", token);
+
+    // Respond with success
+    res.status(200).json({
+      message: "Admin logged out successfully"
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+

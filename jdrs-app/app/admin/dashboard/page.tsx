@@ -2,27 +2,30 @@
 
 import { useEffect, useState } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { 
-  Users, 
-  Building, 
-  BarChart3, 
-  Calendar, 
-  TrendingUp, 
-  RefreshCw, 
+import {
+  Users,
+  Building,
+  BarChart3,
+  Calendar,
+  TrendingUp,
+  RefreshCw,
   Database,
   ArrowUpRight,
   Activity,
   Clock,
-  CheckCircle2,
-  AlertCircle,
   Zap,
   Target,
   Trophy,
-  Gauge
 } from "lucide-react"
 import Link from "next/link"
 import { offlineStorage } from "@/lib/offline-storage"
@@ -41,10 +44,10 @@ interface DashboardStats {
 
 interface RecentActivity {
   id: string
-  type: 'harvest' | 'supervisor' | 'room'
+  type: "harvest" | "supervisor" | "room"
   message: string
   timestamp: string
-  status: 'success' | 'warning' | 'info'
+  status: "success" | "warning" | "info"
 }
 
 export default function AdminDashboard() {
@@ -62,6 +65,8 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [currentTime, setCurrentTime] = useState(new Date())
 
+  
+  // ⏰ Clock updater
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date())
@@ -69,26 +74,37 @@ export default function AdminDashboard() {
     return () => clearInterval(timer)
   }, [])
 
+  // 📊 Load dashboard stats
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const [users, rooms, todayHarvest, allHarvest] = await Promise.all([
-          offlineStorage.getUsers(),
-          offlineStorage.getRooms(),
-          offlineStorage.getTodaysHarvest(),
-          offlineStorage.getHarvestingData(),
-        ])
+        const [users = [], rooms = [], todayHarvest = [], allHarvest = []] =
+          await Promise.all([
+            offlineStorage.getUsers?.() ?? [],
+            offlineStorage.getRooms?.() ?? [],
+            offlineStorage.getTodaysHarvest?.() ?? [],
+            offlineStorage.getHarvestingData?.() ?? [],
+          ])
 
-        const supervisors = users.filter((user) => user.role === "supervisor")
-        const activeSupervisors = supervisors.filter((user) => user.isActive)
+        const supervisors = users.filter((u: any) => u.role === "supervisor")
+        const activeSupervisors = supervisors.filter((u: any) => u.isActive)
 
-        const todayWeight = todayHarvest.reduce((sum, harvest) => sum + harvest.netWeight, 0)
-        const totalWeight = allHarvest.reduce((sum, harvest) => sum + harvest.netWeight, 0)
+        const todayWeight = todayHarvest?.reduce(
+          (sum: number, h: any) => sum + (h.netWeight || 0),
+          0
+        )
+        const totalWeight = allHarvest?.reduce(
+          (sum: number, h: any) => sum + (h.netWeight || 0),
+          0
+        )
 
-        // Mock additional stats for demo
+        // Mock stats
         const weeklyGrowth = Math.random() * 20 + 5
         const monthlyTarget = 1000
-        const efficiency = Math.min((todayWeight / (monthlyTarget / 30)) * 100, 100)
+        const efficiency = Math.min(
+          (todayWeight / (monthlyTarget / 30)) * 100,
+          100
+        )
 
         setStats({
           totalSupervisors: supervisors.length,
@@ -104,28 +120,27 @@ export default function AdminDashboard() {
         // Mock recent activities
         setRecentActivities([
           {
-            id: '1',
-            type: 'harvest',
-            message: 'New harvest recorded: 45.2kg from Room A',
-            timestamp: '2 minutes ago',
-            status: 'success'
+            id: "1",
+            type: "harvest",
+            message: "New harvest recorded: 45.2kg from Room A",
+            timestamp: "2 minutes ago",
+            status: "success",
           },
           {
-            id: '2',
-            type: 'supervisor',
-            message: 'Supervisor John Doe logged in',
-            timestamp: '15 minutes ago',
-            status: 'info'
+            id: "2",
+            type: "supervisor",
+            message: "Supervisor John Doe logged in",
+            timestamp: "15 minutes ago",
+            status: "info",
           },
           {
-            id: '3',
-            type: 'room',
-            message: 'Room B maintenance scheduled',
-            timestamp: '1 hour ago',
-            status: 'warning'
+            id: "3",
+            type: "room",
+            message: "Room B maintenance scheduled",
+            timestamp: "1 hour ago",
+            status: "warning",
           },
         ])
-
       } catch (error) {
         console.error("Failed to load dashboard stats:", error)
       } finally {
@@ -143,7 +158,6 @@ export default function AdminDashboard() {
       href: "/admin/supervisors/add",
       icon: Users,
       gradient: "from-blue-500 to-blue-600",
-      hoverGradient: "hover:from-blue-600 hover:to-blue-700",
     },
     {
       title: "Add Room",
@@ -151,7 +165,6 @@ export default function AdminDashboard() {
       href: "/admin/rooms/add",
       icon: Building,
       gradient: "from-green-500 to-green-600",
-      hoverGradient: "hover:from-green-600 hover:to-green-700",
     },
     {
       title: "Today's Harvest",
@@ -159,7 +172,6 @@ export default function AdminDashboard() {
       href: "/admin/harvesting/today",
       icon: Calendar,
       gradient: "from-orange-500 to-orange-600",
-      hoverGradient: "hover:from-orange-600 hover:to-orange-700",
     },
     {
       title: "Total Harvesting",
@@ -167,7 +179,6 @@ export default function AdminDashboard() {
       href: "/admin/harvesting/total",
       icon: BarChart3,
       gradient: "from-purple-500 to-purple-600",
-      hoverGradient: "hover:from-purple-600 hover:to-purple-700",
     },
     {
       title: "Sync Management",
@@ -175,7 +186,6 @@ export default function AdminDashboard() {
       href: "/admin/sync",
       icon: RefreshCw,
       gradient: "from-indigo-500 to-indigo-600",
-      hoverGradient: "hover:from-indigo-600 hover:to-indigo-700",
     },
     {
       title: "Storage Management",
@@ -183,17 +193,15 @@ export default function AdminDashboard() {
       href: "/admin/storage",
       icon: Database,
       gradient: "from-teal-500 to-teal-600",
-      hoverGradient: "hover:from-teal-600 hover:to-teal-700",
     },
   ]
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      second: '2-digit'
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     })
-  }
 
   const getGreeting = () => {
     const hour = currentTime.getHours()
@@ -208,7 +216,9 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-center h-96">
           <div className="flex items-center gap-3">
             <RefreshCw className="h-6 w-6 animate-spin text-green-500" />
-            <span className="text-lg font-medium text-slate-600">Loading dashboard...</span>
+            <span className="text-lg font-medium text-slate-600">
+              Loading dashboard...
+            </span>
           </div>
         </div>
       </DashboardLayout>

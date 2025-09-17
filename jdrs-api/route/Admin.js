@@ -8,4 +8,7 @@ router.post("/register", adminController.registerAdmin);
 // Login Admin
 router.post("/login", adminController.loginAdmin);
 
+router.post("/logout", adminController.logoutAdmin);
+
+
 module.exports = router;

@@ -27,7 +27,7 @@ export interface SyncResult {
 
 class SyncManager {
   private syncStatus: SyncStatus = {
-    isOnline: false,
+    isOnline: true,
     isSyncing: false,
     pendingItems: 0,
     syncErrors: [],
@@ -39,8 +39,20 @@ class SyncManager {
   private retryTimeout: NodeJS.Timeout | null = null
 
   constructor() {
-    this.initializeNetworkMonitoring()
-    this.loadSyncErrors()
+    if (typeof window !== "undefined") {
+      this.syncStatus.isOnline = navigator.onLine
+
+      window.addEventListener("online", () => {
+        this.syncStatus.isOnline = true
+        this.notifyListeners()
+        this.startAutoSync()
+      })
+
+      window.addEventListener("offline", () => {
+        this.syncStatus.isOnline = false
+        this.notifyListeners()
+      })
+    }
   }
 
   // ================================

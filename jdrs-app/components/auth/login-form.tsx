@@ -26,46 +26,60 @@ export function LoginForm() {
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setError("");
 
-    try {
-      const response = await fetch("http://localhost:5000/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+  try {
+    const response = await fetch("http://localhost:5000/api/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
 
-      const data = await response.json();
-      console.log("API Response:", data);
+    const data = await response.json();
+    console.log("API Response:", data);
 
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
-      }
-
-      // Save token for future requests
-      if (data.token) {
-        sessionStorage.setItem("token", data.token);
-      }
-
-      // Save full user data if needed
-      sessionStorage.setItem("user", JSON.stringify(data));
-
-      alert("Login successful");
-
-      // Route to auth dashboard
-        router.push("/admin/dashboard");
-      
-     
-    } catch (err: any) {
-      console.error("Login error:", err);
-      setError(err.message || "Error during login. Check server or network.");
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      throw new Error(data.message || "Login failed");
     }
-  };
+
+    if (!data.token) {
+      throw new Error("No token received from server");
+    }
+
+    // ✅ Normalize user object (with token + role)
+    const userData = {
+      id: data.admin.id,
+      email: data.admin.email,
+      role: "admin", // since this is admin login
+      token: data.token,
+    };
+
+    // ✅ Save user + token in localStorage (not sessionStorage)
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    alert("Login successful");
+    console.log("Logged in user:", userData);
+
+    // ✅ Redirect based on role
+    if (userData.role === "admin") {
+      router.push("/admin/dashboard");
+    } else if (userData.role === "supervisor") {
+      router.push("/supervisor/dashboard");
+    } else {
+      router.push("/"); // fallback
+    }
+  } catch (err: any) {
+    console.error("Login error:", err);
+    setError(err.message || "Error during login. Check server or network.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 p-4">
