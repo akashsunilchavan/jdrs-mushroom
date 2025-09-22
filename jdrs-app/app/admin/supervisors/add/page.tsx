@@ -69,9 +69,9 @@ interface ApiResponse {
 
 // API Configuration
 const API_CONFIG = {
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api/supervisors/supervisor_register',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api',
   endpoints: {
-    supervisors: '/supervisors',
+    supervisors: '/supervisors/supervisor_register',
     checkEmail: '/supervisors/check-email'
   },
   timeout: 10000, // 10 seconds
@@ -296,30 +296,36 @@ export default function AddSupervisor() {
 
     try {
       // Client-side validation
-      const validationErrors: string[] = []
+      const validationErrors: Partial<ValidationState> = {}
+      let hasErrors = false
       
+      // Validate all fields
       Object.keys(formData).forEach(key => {
-        if (key !== "isActive") {
+        if (key !== "isActive" && key !== "confirmPassword") {
           const error = validateField(key as keyof FormData, formData[key as keyof FormData] as string)
-          if (error) validationErrors.push(error)
+          if (error) {
+            validationErrors[key as keyof ValidationState] = error
+            hasErrors = true
+          }
         }
       })
 
-      if (validationErrors.length > 0) {
-        setError(validationErrors[0])
+      // Validate confirm password separately
+      if (formData.password !== formData.confirmPassword) {
+        validationErrors.confirmPassword = "Passwords do not match"
+        hasErrors = true
+      }
+
+      if (hasErrors) {
+        setValidationState(prev => ({ ...prev, ...validationErrors }))
+        setError("Please fix the validation errors")
         return
       }
 
-      // Prepare API payload
-      const apiPayload = {
-        name: formData.name.trim(),
-        email: formData.email.trim().toLowerCase(),
-        phone: formData.phone.replace(/[\s\-\(\)]/g, ''),
-        password: formData.password,
-        isActive: formData.isActive,
-      }
+      // Prepare API payload (exclude confirmPassword)
+      const { confirmPassword, ...apiPayload } = formData
 
-      // Call API
+      // Call API to create supervisor
       const response = await ApiService.createSupervisor(apiPayload)
 
       if (response.success) {
@@ -423,7 +429,7 @@ export default function AddSupervisor() {
 
   return (
     <DashboardLayout requiredRole="admin">
-      <div className="min-h-screen  p-6">
+      <div className="min-h-screen p-6">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Header Section */}
           <div className="flex items-center gap-4">
@@ -651,20 +657,21 @@ export default function AddSupervisor() {
 
                       <Separator />
 
-                      {/* Account Settings */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Account Settings</h3>
-                        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                          <div className="space-y-1">
-                            <Label htmlFor="isActive" className="text-sm font-medium">Account Status</Label>
-                            <p className="text-xs text-slate-500">Enable this account for immediate access</p>
-                          </div>
-                          <Switch
-                            id="isActive"
-                            checked={formData.isActive}
-                            onCheckedChange={(checked) => handleInputChange("isActive", checked)}
-                          />
+                      {/* Account Status */}
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="isActive" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Account Status
+                          </Label>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">
+                            {formData.isActive ? "Active (can login immediately)" : "Inactive (cannot login)"}
+                          </p>
                         </div>
+                        <Switch
+                          id="isActive"
+                          checked={formData.isActive}
+                          onCheckedChange={(checked) => handleInputChange("isActive", checked)}
+                        />
                       </div>
                     </div>
 
@@ -702,7 +709,63 @@ export default function AddSupervisor() {
               </Card>
             </div>
 
-          
+            {/* Information Panel */}
+            <div className="space-y-6">
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Info className="h-5 w-5 text-blue-500" />
+                    Supervisor Credentials
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-slate-700 dark:text-slate-300">
+                    The supervisor will use their email and password to log in to their dashboard.
+                  </p>
+                  <div className="bg-white/50 dark:bg-slate-800/50 p-4 rounded-lg space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm font-medium">Email:</span>
+                      <span className="text-sm">{formData.email || "Not set"}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Lock className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm font-medium">Password:</span>
+                      <span className="text-sm">{formData.password ? "••••••••" : "Not set"}</span>
+                    </div>
+                  </div>
+                  <Alert className="bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800">
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                    <AlertDescription className="text-amber-700 dark:text-amber-300 text-xs">
+                      Make sure to provide these credentials to the supervisor securely.
+                    </AlertDescription>
+                  </Alert>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/50 dark:to-emerald-950/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    Password Requirements
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {[
+                    "At least 8 characters",
+                    "One uppercase letter",
+                    "One lowercase letter",
+                    "One number",
+                    "One special character (@$!%*?&)"
+                  ].map((requirement, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div className={`h-2 w-2 rounded-full ${formData.password && validatePassword(formData.password) === null ? 'bg-green-500' : 'bg-slate-300'}`}></div>
+                      <span className="text-sm text-slate-700 dark:text-slate-300">{requirement}</span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

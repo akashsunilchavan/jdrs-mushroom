@@ -74,20 +74,8 @@ const adminNavItems = [
     description: "Manage team leads",
     badge: null,
   },
-  {
-    href: "/admin/storage",
-    label: "Storage Management",
-    icon: Database,
-    description: "Inventory & capacity",
-    badge: null,
-  },
-  {
-    href: "/admin/sync",
-    label: "Sync Management",
-    icon: RefreshCw,
-    description: "Data synchronization",
-    badge: null,
-  },
+ 
+ 
 ];
 
 const supervisorNavItems = [
@@ -168,32 +156,17 @@ export function Sidebar({ user }: SidebarProps) {
       <div className="p-6 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm">
         <div className="flex items-center gap-3">
           <Image
-            src="/logo-final1-removebg-preview.png"
+            src="/image.webp"
             alt="JDRS Logo"
-            width={32}
-            height={32}
-            className="rounded-md"
+            width={96}
+            height={80}
+            className="rounded-md ml-24"
           />
-          <div className="flex-1">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-              JDRS Mobile
-            </h2>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge
-                variant={user.role === "admin" ? "default" : "secondary"}
-                className="text-xs font-medium capitalize"
-              >
-                {user.role}
-              </Badge>
-              <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-xs text-green-600 font-medium">Online</span>
-            </div>
-          </div>
+         
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 overflow-y-auto">
+      <nav className="flex-1 p-4 overflow-y-auto w-32 md:w-80">
         <div className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -206,8 +179,8 @@ export function Sidebar({ user }: SidebarProps) {
                   "group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 relative",
                   "hover:shadow-md hover:scale-[1.02] active:scale-[0.98]",
                   isActive
-                    ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/25"
-                    : "text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-gradient-to-r from-green-400 to-green-500 text-white shadow-lg shadow-green-500/25"
+                    : "text-slate-900 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                 )}
                 onClick={() => setIsOpen(false)}
               >
@@ -269,45 +242,11 @@ export function Sidebar({ user }: SidebarProps) {
           })}
         </div>
 
-        {/* Quick Actions */}
-        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
-          <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-2">
-            Quick Actions
-          </h3>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-auto p-3 flex-col gap-2"
-            >
-              <Bell className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-              <span className="text-xs">Alerts</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-auto p-3 flex-col gap-2"
-            >
-              <Settings className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-              <span className="text-xs">Settings</span>
-            </Button>
-          </div>
-        </div>
+       
       </nav>
 
-      {/* Footer */}
       <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-        <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-green-500 rounded-full flex items-center justify-center text-white font-semibold">
-              {user?.name?.charAt(0).toUpperCase() || "?"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate">{user.name}</p>
-              <p className="text-xs text-slate-500 truncate">{user.email}</p>
-            </div>
-          </div>
-        </div>
+       
         <Button
           variant="outline"
           className="w-full text-red-600 border-red-200 hover:bg-red-50"
